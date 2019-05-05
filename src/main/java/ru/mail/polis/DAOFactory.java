@@ -56,6 +56,6 @@ public final class DAOFactory {
         }
 
         // TODO: Implement me
-        return new DAOInit();
+        return new DAOInit(data);
     }
 }
