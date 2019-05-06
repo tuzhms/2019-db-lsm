@@ -32,15 +32,13 @@ public class SSTableInit implements SSTableApi {
     private File ssTableFile;
     private File blob;
     private final NavigableMap<ByteBuffer, SSTableRecord> ssTable;
-    int position;
+    private int position;
 
     SSTableInit(final File data) {
-        if (!data.exists()) {
-            if (!data.mkdir()) {
-                final String message = "Ошибка при создании папки";
-                log.error(message);
-                throw new FileOperationException(message);
-            }
+        if (!data.exists() && !data.mkdir()) {
+            final String message = "Ошибка при создании папки";
+            log.error(message);
+            throw new FileOperationException(message);
         }
         this.data = data;
         ssTable = new TreeMap<>();
