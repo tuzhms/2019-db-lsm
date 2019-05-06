@@ -4,8 +4,7 @@ import java.nio.ByteBuffer;
 
 import ru.mail.polis.Record;
 
-public class Constants {
-    private Constants() {}
+public final class Constants {
 
     public static final Record DELETED_RECORD = Record.of(ByteBuffer.wrap(new byte[0]), ByteBuffer.wrap(new byte[0]));
 
@@ -14,4 +13,6 @@ public class Constants {
 
     public static final String SSTABLE_FILE = "sstable.db";
     public static final String BLOB_FILE = "blob.db";
+
+    private Constants() {}
 }

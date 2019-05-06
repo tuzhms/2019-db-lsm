@@ -28,7 +28,7 @@ public class DAOInit implements DAO {
     private final NavigableMap<ByteBuffer, Record> memTable;
     private final SSTableApi ssTable;
 
-    public DAOInit(File data) {
+    public DAOInit(final File data) {
         memTable = new TreeMap<>();
         ssTable = new SSTableInit(data);
     }
@@ -36,9 +36,9 @@ public class DAOInit implements DAO {
     @NotNull
     @Override
     public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
-        Iterator<Record> memIterator = memTable.tailMap(from).values().iterator();
-        Iterator<SSTableRecord> ssIterator = ssTable.iterator(from);
-        Iterator<Record> ssRecordIterator = Iterators.transform(ssIterator,
+        final Iterator<Record> memIterator = memTable.tailMap(from).values().iterator();
+        final Iterator<SSTableRecord> ssIterator = ssTable.iterator(from);
+        final Iterator<Record> ssRecordIterator = Iterators.transform(ssIterator,
                 ssTableRecord -> {
                     try {
                         return Record.of(ssTableRecord.getKey(), ssTable.get(ssTableRecord.getKey()));
@@ -47,18 +47,17 @@ public class DAOInit implements DAO {
                         return Record.of(ssTableRecord.getKey(), ByteBuffer.wrap(new byte[0]));
                     }
                 });
-        List<Iterator<Record>> iteratorList = new ArrayList<>();
+        final List<Iterator<Record>> iteratorList = new ArrayList<>();
         iteratorList.add(Iterators.filter(memIterator, record -> record != DELETED_RECORD));
         iteratorList.add(ssRecordIterator);
-        Iterator<Record> mergeIterator = Iterators.mergeSorted(iteratorList, Record::compareTo);
-        return mergeIterator;
+        return Iterators.mergeSorted(iteratorList, Record::compareTo);
     }
 
     @NotNull
     @Override
-    public ByteBuffer get(@NotNull ByteBuffer key) throws IOException, NoSuchElementException {
+    public ByteBuffer get(@NotNull final ByteBuffer key) throws IOException, NoSuchElementException {
         if (memTable.containsKey(key)) {
-            Record record = memTable.get(key);
+            final Record record = memTable.get(key);
             if (record == DELETED_RECORD) {
                 throw new NoSuchElementException();
             } else {
@@ -86,8 +85,8 @@ public class DAOInit implements DAO {
     }
 
     private boolean checkFreeMem() {
-        long freeMemory = Runtime.getRuntime().freeMemory();
-        boolean isEndingMemory = freeMemory < MIN_FREE_MEMORY;
+        final long freeMemory = Runtime.getRuntime().freeMemory();
+        final boolean isEndingMemory = freeMemory < MIN_FREE_MEMORY;
         if (isEndingMemory) {
             log.info("Заканчивается свободная память: " + freeMemory / (1024 * 1024) + " МБ");
         }
