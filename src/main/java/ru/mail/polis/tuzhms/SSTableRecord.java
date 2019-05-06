@@ -20,18 +20,18 @@ public class SSTableRecord {
     }
 
     public static SSTableRecord parseString(String recordString) {
-        int i = recordString.lastIndexOf(":");
+        int i = recordString.lastIndexOf(':');
         int len = Integer.valueOf(recordString.substring(i + 1));
         String str = recordString.substring(0, i);
-        i = str.lastIndexOf(":");
+        i = str.lastIndexOf(':');
         int off = Integer.valueOf(str.substring(i + 1));
         str = str.substring(0, i);
-        i = str.lastIndexOf(":");
+        i = str.lastIndexOf(':');
         int length = Integer.valueOf(str.substring(i + 1));
         str = str.substring(0, i);
         byte[] buffer = new byte[length];
         while (true) {
-            i = str.lastIndexOf(":");
+            i = str.lastIndexOf(':');
             if (i == -1) {
                 buffer[0] = Byte.valueOf(str);
                 break;
@@ -46,8 +46,8 @@ public class SSTableRecord {
     }
 
     public String getRecordString() {
-        String key = getStringKey(this.key);
-        return "" + key + this.key.remaining() + ':' + off + ':' + len + '\n';
+        String keyString = getStringKey(key);
+        return "" + keyString + key.remaining() + ':' + off + ':' + len + '\n';
     }
 
     public static String getStringKey(ByteBuffer byteBuffer) {
@@ -63,10 +63,6 @@ public class SSTableRecord {
     public ByteBuffer getKey() {
         return key;
     }
-
-//    public void setKey(ByteBuffer key) {
-//        this.key = key;
-//    }
 
     public int getOff() {
         return off;

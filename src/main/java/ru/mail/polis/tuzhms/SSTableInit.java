@@ -106,6 +106,8 @@ public class SSTableInit implements SSTableApi {
             } catch (Exception e) {
                 log.error("Завалилось чтение в блобе", e);
                 throw new RuntimeException("Завалилось чтение в блобе", e);
+            } finally {
+                inputStream.close();
             }
             return ByteBuffer.wrap(value);
         } else {
@@ -184,13 +186,7 @@ public class SSTableInit implements SSTableApi {
     }
 
     private void deleteFile(File file) throws IOException {
-        if (file.delete()) {
-            log.info("Файл " + file + " удалён");
-        } else {
-            String message = "Ошибка при удалении файла " + file;
-            log.error(message);
-            throw new IOException(message);
-        }
+        Files.delete(file.toPath());
     }
 
     @Override
