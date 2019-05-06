@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
@@ -192,4 +193,8 @@ public class SSTableInit implements SSTableApi {
         }
     }
 
+    @Override
+    public Iterator<SSTableRecord> iterator(@NotNull ByteBuffer from) throws IOException {
+        return ssTable.tailMap(from).values().iterator();
+    }
 }

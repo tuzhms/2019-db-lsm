@@ -2,6 +2,7 @@ package ru.mail.polis.tuzhms;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 
@@ -13,4 +14,6 @@ public interface SSTableApi {
     ByteBuffer get(@NotNull ByteBuffer key) throws NoSuchElementException, IOException;
 
     void updateSSTable(@NotNull NavigableMap<ByteBuffer, Record> memTable) throws IOException;
+
+    Iterator<SSTableRecord> iterator(@NotNull ByteBuffer from) throws IOException;
 }

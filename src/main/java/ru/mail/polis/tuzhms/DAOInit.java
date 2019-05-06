@@ -3,7 +3,9 @@ package ru.mail.polis.tuzhms;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
@@ -11,6 +13,8 @@ import java.util.TreeMap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Iterators;
 
 import ru.mail.polis.DAO;
 import ru.mail.polis.Record;
@@ -32,7 +36,22 @@ public class DAOInit implements DAO {
     @NotNull
     @Override
     public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
-        return memTable.tailMap(from).values().iterator();
+        Iterator<Record> memIterator = memTable.tailMap(from).values().iterator();
+        Iterator<SSTableRecord> ssIterator = ssTable.iterator(from);
+        Iterator<Record> ssRecordIterator = Iterators.transform(ssIterator,
+                ssTableRecord -> {
+                    try {
+                        return Record.of(ssTableRecord.getKey(), ssTable.get(ssTableRecord.getKey()));
+                    } catch (IOException e) {
+                        log.error("Ошибка при чтении из блоба", e);
+                        return Record.of(ssTableRecord.getKey(), ByteBuffer.wrap(new byte[0]));
+                    }
+                });
+        List<Iterator<Record>> iteratorList = new ArrayList<>();
+        iteratorList.add(Iterators.filter(memIterator, record -> record != DELETED_RECORD));
+        iteratorList.add(ssRecordIterator);
+        Iterator<Record> mergeIterator = Iterators.mergeSorted(iteratorList, Record::compareTo);
+        return mergeIterator;
     }
 
     @NotNull
