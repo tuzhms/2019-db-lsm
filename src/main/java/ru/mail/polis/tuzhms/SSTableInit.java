@@ -28,7 +28,7 @@ import static ru.mail.polis.tuzhms.Constants.SSTABLE_FILE;
 public class SSTableInit implements SSTableApi {
     private static final Logger log = LoggerFactory.getLogger(SSTableInit.class);
 
-    final private File data;
+    private final File data;
     private File ssTableFile;
     private File blob;
     private final NavigableMap<ByteBuffer, SSTableRecord> ssTable;
@@ -36,12 +36,10 @@ public class SSTableInit implements SSTableApi {
 
     SSTableInit(final File data) {
         if (!data.exists()) {
-            if (data.mkdir()) {
-                log.info("Папка успешно создалась");
-            } else {
+            if (!data.mkdir()) {
                 final String message = "Ошибка при создании папки";
                 log.error(message);
-                throw new RuntimeException(message);
+                throw new FileOperationException(message);
             }
         }
         this.data = data;
@@ -54,7 +52,7 @@ public class SSTableInit implements SSTableApi {
             } catch (IOException e) {
                 final String message = "Ошибка при открытии файлов";
                 log.error(message, e);
-                throw new RuntimeException(message, e);
+                throw new FileOperationException(message, e);
             }
         } else {
             try{
@@ -62,12 +60,12 @@ public class SSTableInit implements SSTableApi {
             } catch (IOException e) {
                 final String message = "Ошибка при создании файлов";
                 log.error(message, e);
-                throw new RuntimeException(message, e);
+                throw new FileOperationException(message, e);
             }
         }
     }
 
-    private final void openSSTable(final File data) throws IOException {
+    private void openSSTable(final File data) throws IOException {
         ssTableFile = new File(data, SSTABLE_FILE);
         blob = new File(data, BLOB_FILE);
         Files.lines(ssTableFile.toPath(), Charsets.UTF_8)
@@ -76,19 +74,15 @@ public class SSTableInit implements SSTableApi {
     }
 
 
-    private final void createSSTable(final File data) throws IOException {
+    private void createSSTable(final File data) throws IOException {
         ssTableFile = new File(data, SSTABLE_FILE);
-        if(ssTableFile.createNewFile()) {
-            log.info("Файл " + SSTABLE_FILE + " создан");
-        } else {
+        if(!ssTableFile.createNewFile()) {
             final String message = "Ошибка при создании файла " + SSTABLE_FILE;
             log.error(message);
             throw new IOException(message);
         }
         blob = new File(data, BLOB_FILE);
-        if(blob.createNewFile()) {
-            log.info("Файл " + BLOB_FILE + " создан");
-        } else {
+        if(!blob.createNewFile()) {
             final String message = "Ошибка при создании файла " + BLOB_FILE;
             log.error(message);
             throw new IOException(message);
@@ -104,9 +98,9 @@ public class SSTableInit implements SSTableApi {
             try {
                 if (inputStream.skip(record.getOff()) != record.getOff()) throw new IOException();
                 inputStream.read(value, 0, record.getLen());
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.error("Завалилось чтение в блобе", e);
-                throw new RuntimeException("Завалилось чтение в блобе", e);
+                throw new IOException("Завалилось чтение в блобе", e);
             } finally {
                 inputStream.close();
             }
@@ -129,7 +123,7 @@ public class SSTableInit implements SSTableApi {
                 final ByteBuffer byteBuffer = memTable.get(key).getValue();
                 final byte[] bytes = new byte[byteBuffer.remaining()];
                 byteBuffer.get(bytes);
-                SSTableRecord ssTableRecord = new SSTableRecord(key, position, bytes.length);
+                final SSTableRecord ssTableRecord = new SSTableRecord(key, position, bytes.length);
                 position += bytes.length;
                 try {
                     Files.write(blob.toPath(), bytes, StandardOpenOption.APPEND);
@@ -139,7 +133,7 @@ public class SSTableInit implements SSTableApi {
                 } catch (IOException e) {
                     final String message = "Ошибка записи в блоб";
                     log.error(message, e);
-                    throw new RuntimeException(message, e);
+                    throw new FileOperationException(message, e);
                 }
             } else {
                 final byte[] buffer = new byte[value.getLen()];
@@ -157,7 +151,7 @@ public class SSTableInit implements SSTableApi {
                 } catch (IOException e) {
                     final String message = "Ошибка записи в блоб";
                     log.error(message, e);
-                    throw new RuntimeException(message, e);
+                    throw new FileOperationException(message, e);
                 }
             }
         });
@@ -177,9 +171,7 @@ public class SSTableInit implements SSTableApi {
     }
 
     private void renameFile(final File oldFile, final File newFile) throws IOException {
-        if (oldFile.renameTo(newFile)) {
-            log.info("Файл " + oldFile + " переивенован в " + newFile);
-        } else {
+        if (!oldFile.renameTo(newFile)) {
             final String message = "Ошибка при переименовании файла " + oldFile;
             log.error(message);
             throw new IOException(message);

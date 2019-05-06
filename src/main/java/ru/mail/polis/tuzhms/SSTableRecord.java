@@ -7,15 +7,15 @@ public class SSTableRecord {
     /** Ключ. */
     private final ByteBuffer key;
     /** Начальный индекс записи. */
-    private int off;
+    private final int off;
     /** Длина записи. */
-    private int len;
+    private final int len;
 
     /**
-     *
-     * @param key
-     * @param off
-     * @param len
+     * Конструктор записи SSTable.
+     * @param key   ключ.
+     * @param off   начало.
+     * @param len   смещение.
      */
     public SSTableRecord(final ByteBuffer key, final int off, final int len) {
         this.key = key;
@@ -24,9 +24,9 @@ public class SSTableRecord {
     }
 
     /**
-     *
-     * @param recordString
-     * @return
+     * Парсинг строки записи из файла sstable.db.
+     * @param recordString входная строка.
+     * @return запись в удобном для работы формате.
      */
     public static SSTableRecord parseString(final String recordString) {
         int index = recordString.lastIndexOf(':');
@@ -60,14 +60,14 @@ public class SSTableRecord {
     }
 
     /**
-     *
-     * @param byteBuffer
-     * @return
+     * Конвертация ключа из ByteBuffer в строку. Для записи в файл.
+     * @param byteBuffer ключ в виде ByteBuffer.
+     * @return  ключ в виде строки.
      */
     public static String getStringKey(final ByteBuffer byteBuffer) {
         final byte[] buffer = new byte[byteBuffer.remaining()];
         byteBuffer.duplicate().get(buffer);
-        StringBuilder stringBuilder = new StringBuilder();
+        final StringBuilder stringBuilder = new StringBuilder();
         for (final byte b: buffer) {
             stringBuilder.append(b).append(':');
         }
