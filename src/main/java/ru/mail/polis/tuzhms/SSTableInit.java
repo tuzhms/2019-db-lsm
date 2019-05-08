@@ -41,7 +41,7 @@ public class SSTableInit implements SSTableApi {
             throw new FileOperationException(message);
         }
         this.data = data;
-        ssTable = new TreeMap<>();
+        this.ssTable = new TreeMap<>();
         final String[] files = data.list();
         final List list = Arrays.asList(files);
         if (list.contains(SSTABLE_FILE) && list.contains(BLOB_FILE)) {
@@ -70,7 +70,6 @@ public class SSTableInit implements SSTableApi {
                 .map(SSTableRecord::parseString)
                 .forEach(record -> ssTable.put(record.getKey(), record));
     }
-
 
     private void createSSTable(final File data) throws IOException {
         ssTableFile = new File(data, SSTABLE_FILE);

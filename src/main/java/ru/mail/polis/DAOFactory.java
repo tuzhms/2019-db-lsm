@@ -29,7 +29,7 @@ import ru.mail.polis.tuzhms.DAOInit;
  * @author Vadim Tsesko
  */
 public final class DAOFactory {
-    static final long MAX_HEAP = 128 * 1024 * 1024;
+    public static final long MAX_HEAP = 128 * 1024 * 1024;
 
     private DAOFactory() {
         // Not instantiatable

@@ -29,26 +29,12 @@ public class SSTableRecord {
      * @return запись в удобном для работы формате.
      */
     public static SSTableRecord parseString(final String recordString) {
-        int index = recordString.lastIndexOf(':');
-        final int len = Integer.valueOf(recordString.substring(index + 1));
-        String str = recordString.substring(0, index);
-        index = str.lastIndexOf(':');
-        final int off = Integer.valueOf(str.substring(index + 1));
-        str = str.substring(0, index);
-        index = str.lastIndexOf(':');
-        int length = Integer.valueOf(str.substring(index + 1));
-        str = str.substring(0, index);
-        byte[] buffer = new byte[length];
-        while (true) {
-            index = str.lastIndexOf(':');
-            if (index == -1) {
-                buffer[0] = Byte.valueOf(str);
-                break;
-            } else {
-                buffer[length - 1] = Byte.valueOf(str.substring(index + 1));
-                str = str.substring(0, index);
-            }
-            length--;
+        final String[] parseString = recordString.split(":");
+        final int len = Integer.valueOf(parseString[parseString.length - 1]);
+        final int off = Integer.valueOf(parseString[parseString.length - 2]);
+        byte[] buffer = new byte[parseString.length - 3];
+        for (int i = 0; i < buffer.length; i++) {
+            buffer[i] = Byte.valueOf(parseString[i]);
         }
         final ByteBuffer key = ByteBuffer.wrap(buffer);
         return new SSTableRecord(key, off, len);

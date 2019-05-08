@@ -44,7 +44,7 @@ public class DAOInit implements DAO {
                         return Record.of(ssTableRecord.getKey(), ssTable.get(ssTableRecord.getKey()));
                     } catch (IOException e) {
                         log.error("Ошибка при чтении из блоба", e);
-                        return Record.of(ssTableRecord.getKey(), ByteBuffer.wrap(new byte[0]));
+                        throw new FileOperationException("Ошибка при чтении из блоба", e);
                     }
                 });
         final List<Iterator<Record>> iteratorList = new ArrayList<>();
